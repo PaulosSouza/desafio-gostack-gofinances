@@ -1,18 +1,44 @@
 import { Router } from 'express';
 
-// import TransactionsRepository from '../repositories/TransactionsRepository';
-// import CreateTransactionService from '../services/CreateTransactionService';
+import { getCustomRepository } from 'typeorm';
+
+import TransactionsRepository from '../repositories/TransactionsRepository';
+import CreateTransactionService from '../services/CreateTransactionService';
+import CreateCategoryService from '../services/CreateCategoryService';
 // import DeleteTransactionService from '../services/DeleteTransactionService';
 // import ImportTransactionsService from '../services/ImportTransactionsService';
 
 const transactionsRouter = Router();
 
 transactionsRouter.get('/', async (request, response) => {
-  // TODO
+  const transactionRepository = getCustomRepository(TransactionsRepository);
+
+  const balance = await transactionRepository.getBalance();
+  const transactions = await transactionRepository.find({
+    relations: ['category'],
+  });
+
+  return response.json({ balance, transactions });
 });
 
 transactionsRouter.post('/', async (request, response) => {
-  // TODO
+  const { title, value, type, category } = request.body;
+
+  const createCategory = new CreateCategoryService();
+  const createTransaction = new CreateTransactionService();
+
+  const categoryCreated = await createCategory.execute({ category });
+
+  const transaction = await createTransaction.execute({
+    title,
+    value,
+    type,
+    category_id: categoryCreated.id,
+  });
+
+  transaction.category = category;
+
+  return response.json(transaction);
 });
 
 transactionsRouter.delete('/:id', async (request, response) => {
