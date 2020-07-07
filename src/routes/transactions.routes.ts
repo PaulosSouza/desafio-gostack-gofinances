@@ -11,6 +11,13 @@ import DeleteTransactionService from '../services/DeleteTransactionService';
 import ImportTransactionsService from '../services/ImportTransactionsService';
 import loadCSV from '../utils/loadCsv';
 
+interface TransactionDTO {
+  title: string;
+  type: 'income' | 'outcome';
+  value: number;
+  category: string;
+}
+
 const transactionsRouter = Router();
 const upload = multer(uploadConfig);
 
@@ -64,9 +71,9 @@ transactionsRouter.post(
 
     const transactionsUnformmated = await loadCSV(path);
 
-    const transactionsFormatted = [] as Array<object>;
+    const transactionsFormatted = [] as Array<TransactionDTO>;
 
-    transactionsUnformmated.map(transactionline => {
+    transactionsUnformmated.forEach(transactionline => {
       const [title, type, value, category] = transactionline;
 
       const transaction = {
@@ -74,16 +81,18 @@ transactionsRouter.post(
         type,
         value: Number(value),
         category,
-      };
+      } as TransactionDTO;
 
       transactionsFormatted.push(transaction);
     });
 
     const importTransactions = new ImportTransactionsService();
 
-    const transactions = importTransactions.execute(transactionsFormatted);
+    const transactions = await importTransactions.execute(
+      transactionsFormatted,
+    );
 
-    return response.json({ ok: true });
+    return response.json(transactions);
   },
 );
 
