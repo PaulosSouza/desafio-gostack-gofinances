@@ -1,7 +1,14 @@
 import Transaction from '../models/Transaction';
 
+interface Request {
+  title: string;
+  type: string;
+  value: number;
+  category: string;
+}
+
 class ImportTransactionsService {
-  async execute(): Promise<Transaction[]> {
+  async execute(transactionsImported: Array<Request>): Promise<Transaction[]> {
     // TODO
   }
 }
