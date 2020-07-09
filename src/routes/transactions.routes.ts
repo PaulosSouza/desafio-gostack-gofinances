@@ -9,7 +9,6 @@ import CreateTransactionService from '../services/CreateTransactionService';
 import CreateCategoryService from '../services/CreateCategoryService';
 import DeleteTransactionService from '../services/DeleteTransactionService';
 import ImportTransactionsService from '../services/ImportTransactionsService';
-import loadCSV from '../utils/loadCsv';
 
 interface TransactionDTO {
   title: string;
@@ -45,10 +44,8 @@ transactionsRouter.post('/', async (request, response) => {
     title,
     value,
     type,
-    category_id: categoryCreated.id,
+    category: categoryCreated,
   });
-
-  transaction.category = category;
 
   return response.json(transaction);
 });
@@ -58,7 +55,7 @@ transactionsRouter.delete('/:id', async (request, response) => {
 
   const deleteTransaction = new DeleteTransactionService();
 
-  await deleteTransaction.execute({ id });
+  await deleteTransaction.execute(id);
 
   return response.status(204).send();
 });
@@ -69,28 +66,9 @@ transactionsRouter.post(
   async (request, response) => {
     const { path } = request.file;
 
-    const transactionsUnformmated = await loadCSV(path);
+    const importTransaction = new ImportTransactionsService();
 
-    const transactionsFormatted = [] as Array<TransactionDTO>;
-
-    transactionsUnformmated.forEach(transactionline => {
-      const [title, type, value, category] = transactionline;
-
-      const transaction = {
-        title,
-        type,
-        value: Number(value),
-        category,
-      } as TransactionDTO;
-
-      transactionsFormatted.push(transaction);
-    });
-
-    const importTransactions = new ImportTransactionsService();
-
-    const transactions = await importTransactions.execute(
-      transactionsFormatted,
-    );
+    const transactions = await importTransaction.execute(path);
 
     return response.json(transactions);
   },

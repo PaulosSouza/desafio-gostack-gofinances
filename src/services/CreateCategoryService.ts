@@ -17,7 +17,7 @@ class CreateCategoryService {
     });
 
     if (!categoryExists) {
-      const newCategory = await categoryRepository.create({
+      const newCategory = categoryRepository.create({
         title: category,
       });
 

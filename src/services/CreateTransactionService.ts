@@ -4,12 +4,13 @@ import AppError from '../errors/AppError';
 
 import Transaction from '../models/Transaction';
 import TransactionRepository from '../repositories/TransactionsRepository';
+import Category from '../models/Category';
 
 interface Request {
   title: string;
   value: number;
   type: 'income' | 'outcome';
-  category_id: string;
+  category: Category;
 }
 
 class CreateTransactionService {
@@ -17,7 +18,7 @@ class CreateTransactionService {
     title,
     value,
     type,
-    category_id,
+    category,
   }: Request): Promise<Transaction> {
     if (!['income', 'outcome'].includes(type)) {
       throw new AppError('Transaction type is invalid');
@@ -35,7 +36,7 @@ class CreateTransactionService {
       title,
       value,
       type,
-      category_id,
+      category,
     });
 
     await transactionRepository.save(transaction);
